@@ -1,0 +1,138 @@
+import { Canvas } from "@react-three/fiber";
+import { Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
+import { useMemo, useState } from "react";
+
+type Hotspot = {
+  id: string;
+  label: string;
+  description: string;
+  position: [number, number, number];
+};
+
+function PizzariaModel() {
+  // Coloque o arquivo em: public/pizzaria.glb
+  const { scene } = useGLTF("/pizzaria.glb");
+  return <primitive object={scene} />;
+}
+
+function HotspotPin({
+  hotspot,
+  onSelect,
+}: {
+  hotspot: Hotspot;
+  onSelect: (h: Hotspot) => void;
+}) {
+  return (
+    <group position={hotspot.position}>
+      <mesh
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect(hotspot);
+        }}
+      >
+        <sphereGeometry args={[0.08, 24, 24]} />
+        <meshStandardMaterial color="#ef4444" />
+      </mesh>
+
+      <Html distanceFactor={10} style={{ pointerEvents: "none" }}>
+        <div className="rounded bg-black/70 px-2 py-1 text-xs text-white">
+          {hotspot.label}
+        </div>
+      </Html>
+    </group>
+  );
+}
+
+export default function App() {
+  const [selected, setSelected] = useState<Hotspot | null>(null);
+
+  // Ajuste as posições (x,y,z) para bater com seu GLB
+  const hotspots = useMemo<Hotspot[]>(
+    () => [
+      {
+        id: "balcao",
+        label: "Balcão",
+        description: "Área de atendimento e retirada.",
+        position: [0, 1.1, 0],
+      },
+      {
+        id: "forno",
+        label: "Forno",
+        description: "Cozinha: onde as pizzas assam.",
+        position: [2, 1.0, -1.5],
+      },
+      {
+        id: "mesa-1",
+        label: "Mesa 1",
+        description: "Mesa para 2 pessoas.",
+        position: [-1.5, 1.0, 1.8],
+      },
+    ],
+    []
+  );
+
+  return (
+    <div className="h-screen w-screen bg-zinc-950 text-white">
+      {/* HUD */}
+      <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-lg bg-black/60 px-3 py-2 text-sm">
+        <div className="font-medium">Mapa 3D — Pizzaria</div>
+        <div className="text-white/80">Arraste para orbitar. Clique nos pins.</div>
+      </div>
+
+      {/* Painel */}
+      <div className="absolute right-4 top-4 z-10 w-[320px] max-w-[90vw]">
+        {selected ? (
+          <div className="rounded-xl border border-white/10 bg-black/60 p-4 backdrop-blur">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-base font-semibold">{selected.label}</div>
+                <div className="mt-1 text-sm text-white/80">
+                  {selected.description}
+                </div>
+              </div>
+              <button
+                className="rounded-md bg-white/10 px-2 py-1 text-sm hover:bg-white/15"
+                onClick={() => setSelected(null)}
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div className="mt-3 text-xs text-white/60">
+              Posição: [{selected.position.join(", ")}]
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-white/10 bg-black/30 p-4 text-sm text-white/70 backdrop-blur">
+            Clique em um hotspot para ver detalhes.
+          </div>
+        )}
+      </div>
+
+      <Canvas
+        camera={{ position: [4, 2.5, 6], fov: 50 }}
+        onPointerMissed={() => setSelected(null)}
+      >
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[5, 8, 5]} intensity={1.2} />
+
+        <PizzariaModel />
+
+        {hotspots.map((h) => (
+          <HotspotPin key={h.id} hotspot={h} onSelect={setSelected} />
+        ))}
+
+        <OrbitControls
+          enableDamping
+          dampingFactor={0.08}
+          rotateSpeed={0.6}
+          maxPolarAngle={Math.PI / 2.05}
+        />
+
+        <Environment preset="city" />
+      </Canvas>
+    </div>
+  );
+}
+
+useGLTF.preload("/pizzaria.glb");
