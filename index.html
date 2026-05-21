@@ -1,138 +1,318 @@
-import { Canvas } from "@react-three/fiber";
-import { Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
-import { useMemo, useState } from "react";
-
-type Hotspot = {
-  id: string;
-  label: string;
-  description: string;
-  position: [number, number, number];
-};
-
-function PizzariaModel() {
-  // Coloque o arquivo em: public/pizzaria.glb
-  const { scene } = useGLTF("/pizzaria.glb");
-  return <primitive object={scene} />;
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CallHub</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }body {
+  background: #0f172a;
+  color: white;
+  min-height: 100vh;
 }
 
-function HotspotPin({
-  hotspot,
-  onSelect,
-}: {
-  hotspot: Hotspot;
-  onSelect: (h: Hotspot) => void;
-}) {
-  return (
-    <group position={hotspot.position}>
-      <mesh
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelect(hotspot);
-        }}
-      >
-        <sphereGeometry args={[0.08, 24, 24]} />
-        <meshStandardMaterial color="#ef4444" />
-      </mesh>
-
-      <Html distanceFactor={10} style={{ pointerEvents: "none" }}>
-        <div className="rounded bg-black/70 px-2 py-1 text-xs text-white">
-          {hotspot.label}
-        </div>
-      </Html>
-    </group>
-  );
+.screen {
+  display: none;
+  padding: 20px;
 }
 
-export default function App() {
-  const [selected, setSelected] = useState<Hotspot | null>(null);
-
-  // Ajuste as posições (x,y,z) para bater com seu GLB
-  const hotspots = useMemo<Hotspot[]>(
-    () => [
-      {
-        id: "balcao",
-        label: "Balcão",
-        description: "Área de atendimento e retirada.",
-        position: [0, 1.1, 0],
-      },
-      {
-        id: "forno",
-        label: "Forno",
-        description: "Cozinha: onde as pizzas assam.",
-        position: [2, 1.0, -1.5],
-      },
-      {
-        id: "mesa-1",
-        label: "Mesa 1",
-        description: "Mesa para 2 pessoas.",
-        position: [-1.5, 1.0, 1.8],
-      },
-    ],
-    []
-  );
-
-  return (
-    <div className="h-screen w-screen bg-zinc-950 text-white">
-      {/* HUD */}
-      <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-lg bg-black/60 px-3 py-2 text-sm">
-        <div className="font-medium">Mapa 3D — Pizzaria</div>
-        <div className="text-white/80">Arraste para orbitar. Clique nos pins.</div>
-      </div>
-
-      {/* Painel */}
-      <div className="absolute right-4 top-4 z-10 w-[320px] max-w-[90vw]">
-        {selected ? (
-          <div className="rounded-xl border border-white/10 bg-black/60 p-4 backdrop-blur">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-base font-semibold">{selected.label}</div>
-                <div className="mt-1 text-sm text-white/80">
-                  {selected.description}
-                </div>
-              </div>
-              <button
-                className="rounded-md bg-white/10 px-2 py-1 text-sm hover:bg-white/15"
-                onClick={() => setSelected(null)}
-              >
-                Fechar
-              </button>
-            </div>
-
-            <div className="mt-3 text-xs text-white/60">
-              Posição: [{selected.position.join(", ")}]
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-white/10 bg-black/30 p-4 text-sm text-white/70 backdrop-blur">
-            Clique em um hotspot para ver detalhes.
-          </div>
-        )}
-      </div>
-
-      <Canvas
-        camera={{ position: [4, 2.5, 6], fov: 50 }}
-        onPointerMissed={() => setSelected(null)}
-      >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 8, 5]} intensity={1.2} />
-
-        <PizzariaModel />
-
-        {hotspots.map((h) => (
-          <HotspotPin key={h.id} hotspot={h} onSelect={setSelected} />
-        ))}
-
-        <OrbitControls
-          enableDamping
-          dampingFactor={0.08}
-          rotateSpeed={0.6}
-          maxPolarAngle={Math.PI / 2.05}
-        />
-
-        <Environment preset="city" />
-      </Canvas>
-    </div>
-  );
+.active {
+  display: block;
 }
 
-useGLTF.preload("/pizzaria.glb");
+h1 {
+  margin-bottom: 20px;
+}
+
+input, button, select {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+input, select {
+  width: 100%;
+  background: #1e293b;
+  color: white;
+}
+
+button {
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
+.calls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.call-card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 15px;
+}
+
+.call-card h3 {
+  margin-bottom: 10px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.video-area {
+  background: #111827;
+  height: 350px;
+  border-radius: 20px;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 20px;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.danger {
+  background: #ef4444;
+}
+
+.danger:hover {
+  background: #dc2626;
+}
+
+.success {
+  background: #10b981;
+}
+
+.success:hover {
+  background: #059669;
+}
+
+.small {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-top: 5px;
+}
+
+  </style>
+</head>
+<body>  <!-- LOGIN -->  <div class="screen active" id="loginScreen">
+    <h1>CallHub</h1>
+    <p>Digite seu nome para entrar:</p><input type="text" id="username" placeholder="Seu nome" />
+<button onclick="enterApp()">Entrar</button>
+
+  </div>  <!-- HOME -->  <div class="screen" id="homeScreen">
+    <div class="top-bar">
+      <h1>Calls Disponíveis</h1>
+      <button onclick="showCreateCall()">+ Criar Call</button>
+    </div><div class="calls" id="callsList"></div>
+
+  </div>  <!-- CRIAR CALL -->  <div class="screen" id="createCallScreen">
+    <h1>Criar Call</h1><input type="text" id="callName" placeholder="Nome da Call" />
+
+<select id="callType">
+  <option value="public">Pública</option>
+  <option value="private">Privada</option>
+</select>
+
+<input type="text" id="privatePassword" placeholder="Senha da Call Privada (Opcional)" />
+
+<button onclick="createCall()">Criar</button>
+<button class="danger" onclick="goHome()">Cancelar</button>
+
+  </div>  <!-- CALL -->  <div class="screen" id="callScreen">
+    <div class="top-bar">
+      <h1 id="currentCallTitle">Call</h1>
+      <button onclick="goHome()">Voltar</button>
+    </div><div class="video-area" id="videoArea">
+  Nenhuma câmera ligada
+</div>
+
+<div class="controls">
+  <button onclick="toggleCamera()">📷 Câmera</button>
+  <button onclick="toggleMic()">🎤 Mutar</button>
+  <button onclick="shareScreen()">🖥 Compartilhar Tela</button>
+  <button class="danger" onclick="leaveCall()">🚪 Sair da Call</button>
+</div>
+
+<p class="small" id="statusText"></p>
+
+  </div>  <script>
+    let currentUser = "";
+    let currentCall = null;
+    let micMuted = false;
+    let cameraOn = false;
+
+    // Calls salvas
+    let calls = JSON.parse(localStorage.getItem("calls")) || [];
+
+    function saveCalls() {
+      localStorage.setItem("calls", JSON.stringify(calls));
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+
+      document.getElementById(id).classList.add('active');
+    }
+
+    function enterApp() {
+      const username = document.getElementById('username').value.trim();
+
+      if (!username) {
+        alert('Digite um nome!');
+        return;
+      }
+
+      currentUser = username;
+      renderCalls();
+      showScreen('homeScreen');
+    }
+
+    function renderCalls() {
+      const list = document.getElementById('callsList');
+      list.innerHTML = '';
+
+      if (calls.length === 0) {
+        list.innerHTML = '<p>Nenhuma call criada ainda.</p>';
+        return;
+      }
+
+      calls.forEach(call => {
+        const div = document.createElement('div');
+        div.className = 'call-card';
+
+        div.innerHTML = `
+          <h3>${call.name}</h3>
+          <p>${call.type === 'public' ? '🌍 Pública' : '🔒 Privada'}</p>
+          <p class="small">Criada por: ${call.owner}</p>
+          <button onclick="joinCall('${call.id}')">Entrar</button>
+        `;
+
+        list.appendChild(div);
+      });
+    }
+
+    function showCreateCall() {
+      showScreen('createCallScreen');
+    }
+
+    function goHome() {
+      renderCalls();
+      showScreen('homeScreen');
+    }
+
+    function createCall() {
+      const name = document.getElementById('callName').value.trim();
+      const type = document.getElementById('callType').value;
+      const password = document.getElementById('privatePassword').value.trim();
+
+      if (!name) {
+        alert('Digite o nome da call!');
+        return;
+      }
+
+      const newCall = {
+        id: Date.now().toString(),
+        name,
+        type,
+        password,
+        owner: currentUser,
+        users: []
+      };
+
+      calls.push(newCall);
+      saveCalls();
+
+      joinCall(newCall.id);
+    }
+
+    function joinCall(callId) {
+      const call = calls.find(c => c.id === callId);
+
+      if (!call) return;
+
+      if (call.type === 'private') {
+        const pass = prompt('Digite a senha da call:');
+
+        if (pass !== call.password) {
+          alert('Senha incorreta!');
+          return;
+        }
+      }
+
+      currentCall = call;
+
+      if (!call.users.includes(currentUser)) {
+        call.users.push(currentUser);
+      }
+
+      saveCalls();
+
+      document.getElementById('currentCallTitle').innerText = call.name;
+      document.getElementById('statusText').innerText = `Você entrou na call como ${currentUser}`;
+
+      showScreen('callScreen');
+    }
+
+    function leaveCall() {
+      if (!currentCall) return;
+
+      alert('Você saiu da call!');
+
+      // O dono ainda consegue voltar depois
+      goHome();
+    }
+
+    function toggleMic() {
+      micMuted = !micMuted;
+
+      document.getElementById('statusText').innerText = micMuted
+        ? '🎤 Microfone mutado'
+        : '🎤 Microfone ativado';
+    }
+
+    function toggleCamera() {
+      cameraOn = !cameraOn;
+
+      const videoArea = document.getElementById('videoArea');
+
+      if (cameraOn) {
+        videoArea.innerHTML = '📷 Câmera ligada';
+      } else {
+        videoArea.innerHTML = 'Nenhuma câmera ligada';
+      }
+    }
+
+    function shareScreen() {
+      alert('🖥 Compartilhamento de tela iniciado!');
+    }
+  </script></body>
+</html>
